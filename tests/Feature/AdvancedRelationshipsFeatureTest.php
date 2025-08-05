@@ -95,12 +95,7 @@ beforeEach(function () {
         $table->timestamps();
     });
 
-    Schema::create('property_attribute_models', function ($table) {
-        $table->id();
-        $table->string('name');
-        $table->foreignId('author_id')->constrained('authors');
-        $table->timestamps();
-    });
+
 
     Schema::create('taggables', function ($table) {
         $table->id();
@@ -183,15 +178,7 @@ it('can create and use MorphToMany relationships defined with attributes', funct
     expect($tags->pluck('name')->toArray())->toContain('PHP', 'Laravel');
 });
 
-it('supports property-level attribute relationships', function () {
-    $author = \StevenFox\Eloquaint\Tests\Models\Author::create(['name' => 'Test Author', 'email' => 'author@example.com']);
-    $model = PropertyAttributeModel::create(['name' => 'Test Model', 'author_id' => $author->id]);
 
-    // Test that the relationships are properly defined
-    expect($model->posts())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class);
-    expect($model->author())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class);
-    expect($model->images())->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphMany::class);
-});
 
 it('applies where constraints to morphMany relationships', function () {
     $country = Country::create(['name' => 'USA', 'code' => 'US']);

@@ -72,18 +72,6 @@ trait HasAttributeRelations
                 static::$attributeRelationsCache[$class][$relationName] = $instance;
             }
         }
-
-        // Parse property-level attributes
-        foreach ($reflection->getProperties() as $property) {
-            foreach ($property->getAttributes() as $attribute) {
-                $instance = $attribute->newInstance();
-
-                if ($instance instanceof RelationshipAttribute) {
-                    $relationName = $instance->getName() ?? $property->getName();
-                    static::$attributeRelationsCache[$class][$relationName] = $instance;
-                }
-            }
-        }
     }
 
     /**

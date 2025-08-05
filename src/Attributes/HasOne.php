@@ -10,7 +10,7 @@ use StevenFox\Eloquaint\Attributes\Contracts\RelationshipAttribute;
 /**
  * Attribute for defining HasOne relationships.
  *
- * This attribute can be applied to classes or properties to define
+ * This attribute can be applied to classes to define
  * a one-to-one relationship with another model.
  *
  * @example
@@ -30,7 +30,7 @@ use StevenFox\Eloquaint\Attributes\Contracts\RelationshipAttribute;
  * }
  * ```
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 final readonly class HasOne implements RelationshipAttribute
 {
     /**

@@ -84,20 +84,7 @@ it('can resolve custom named MorphMany relationships with constraints', function
     expect($customImagesRelation->getRelated())->toBeInstanceOf(Image::class);
 });
 
-it('can resolve property-level attribute relationships', function () {
-    $model = new PropertyAttributeModel;
 
-    $postsRelation = $model->posts();
-    expect($postsRelation)->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\HasMany::class);
-    expect($postsRelation->getRelated())->toBeInstanceOf(Post::class);
-
-    $authorRelation = $model->author();
-    expect($authorRelation)->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class);
-
-    $imagesRelation = $model->images();
-    expect($imagesRelation)->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphMany::class);
-    expect($imagesRelation->getRelated())->toBeInstanceOf(Image::class);
-});
 
 it('throws exception for unsupported relationship type', function () {
     $model = new class extends \Illuminate\Database\Eloquent\Model {
