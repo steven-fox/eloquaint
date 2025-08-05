@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use StevenFox\Eloquaint\Attributes\BelongsTo;
 use StevenFox\Eloquaint\Attributes\BelongsToMany;
 use StevenFox\Eloquaint\Attributes\HasMany;
+use StevenFox\Eloquaint\Attributes\MorphMany;
+use StevenFox\Eloquaint\Attributes\MorphOne;
+use StevenFox\Eloquaint\Attributes\MorphToMany;
 use StevenFox\Eloquaint\Traits\HasAttributeRelations;
 
 /**
@@ -27,6 +30,9 @@ use StevenFox\Eloquaint\Traits\HasAttributeRelations;
 #[BelongsTo(Author::class)]
 #[HasMany(Comment::class)]
 #[BelongsToMany(Tag::class)]
+#[MorphMany(Image::class, name: 'imageable')]
+#[MorphOne(Video::class, name: 'videoable')]
+#[MorphToMany(Tag::class, name: 'taggable', relationName: 'morphTags')]
 final class Post extends Model
 {
     use HasAttributeRelations;
@@ -38,6 +44,7 @@ final class Post extends Model
      */
     protected $fillable = [
         'author_id',
+        'user_id',
         'title',
         'content',
         'published',

@@ -98,11 +98,17 @@ trait HasAttributeRelations
             return $attribute->getName();
         }
 
+        // For MorphTo relationships, use the morph name
+        if ($attribute->getRelationshipType() === 'morphTo') {
+            /** @var \StevenFox\Eloquaint\Attributes\MorphTo $attribute */
+            return $attribute->name ?? 'morphable';
+        }
+
         // Generate name from related class
         $baseName = class_basename($attribute->getRelated());
 
         // Pluralize for "many" relationships
-        if (in_array($attribute->getRelationshipType(), ['hasMany', 'belongsToMany', 'morphMany', 'morphToMany'], true)) {
+        if (in_array($attribute->getRelationshipType(), ['hasMany', 'belongsToMany', 'morphMany', 'morphToMany', 'hasManyThrough'], true)) {
             return Str::camel(Str::plural($baseName));
         }
 
