@@ -125,7 +125,7 @@ trait HasAttributeRelations
     public function __call($method, $parameters)
     {
         if ($attribute = $this->getAttributeRelation($method)) {
-            return $this->resolveAttributeRelation($attribute);
+            return $this->resolveAttributeRelation($attribute, $method);
         }
 
         return parent::__call($method, $parameters);
@@ -162,7 +162,7 @@ trait HasAttributeRelations
         // Get the relationship instance and execute it
         $attribute = $this->getAttributeRelation($key);
         if ($attribute) {
-            $relation = $this->resolveAttributeRelation($attribute);
+            $relation = $this->resolveAttributeRelation($attribute, $key);
 
             return $this->relations[$key] = $relation->getResults();
         }
@@ -201,22 +201,23 @@ trait HasAttributeRelations
      * Resolve an attribute relationship to an Eloquent relation.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      *
      * @throws InvalidRelationshipAttributeException
      */
-    protected function resolveAttributeRelation(RelationshipAttribute $attribute): Relation
+    protected function resolveAttributeRelation(RelationshipAttribute $attribute, ?string $methodName = null): Relation
     {
         $relation = match ($attribute->getRelationshipType()) {
-            'hasMany' => $this->resolveHasMany($attribute),
-            'hasOne' => $this->resolveHasOne($attribute),
-            'belongsTo' => $this->resolveBelongsTo($attribute),
-            'belongsToMany' => $this->resolveBelongsToMany($attribute),
-            'hasManyThrough' => $this->resolveHasManyThrough($attribute),
-            'hasOneThrough' => $this->resolveHasOneThrough($attribute),
-            'morphMany' => $this->resolveMorphMany($attribute),
-            'morphOne' => $this->resolveMorphOne($attribute),
-            'morphTo' => $this->resolveMorphTo($attribute),
-            'morphToMany' => $this->resolveMorphToMany($attribute),
+            'hasMany' => $this->resolveHasMany($attribute, $methodName),
+            'hasOne' => $this->resolveHasOne($attribute, $methodName),
+            'belongsTo' => $this->resolveBelongsTo($attribute, $methodName),
+            'belongsToMany' => $this->resolveBelongsToMany($attribute, $methodName),
+            'hasManyThrough' => $this->resolveHasManyThrough($attribute, $methodName),
+            'hasOneThrough' => $this->resolveHasOneThrough($attribute, $methodName),
+            'morphMany' => $this->resolveMorphMany($attribute, $methodName),
+            'morphOne' => $this->resolveMorphOne($attribute, $methodName),
+            'morphTo' => $this->resolveMorphTo($attribute, $methodName),
+            'morphToMany' => $this->resolveMorphToMany($attribute, $methodName),
             default => throw new InvalidRelationshipAttributeException(
                 "Unsupported relationship type: {$attribute->getRelationshipType()}"
             ),
@@ -234,9 +235,10 @@ trait HasAttributeRelations
      * Resolve a HasMany relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return HasMany<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveHasMany(RelationshipAttribute $attribute): HasMany
+    protected function resolveHasMany(RelationshipAttribute $attribute, ?string $methodName = null): HasMany
     {
         /** @var \StevenFox\Eloquaint\Attributes\HasMany $attribute */
 
@@ -251,9 +253,10 @@ trait HasAttributeRelations
      * Resolve a HasOne relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return HasOne<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveHasOne(RelationshipAttribute $attribute): HasOne
+    protected function resolveHasOne(RelationshipAttribute $attribute, ?string $methodName = null): HasOne
     {
         /** @var \StevenFox\Eloquaint\Attributes\HasOne $attribute */
 
@@ -268,15 +271,17 @@ trait HasAttributeRelations
      * Resolve a BelongsTo relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return BelongsTo<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveBelongsTo(RelationshipAttribute $attribute): BelongsTo
+    protected function resolveBelongsTo(RelationshipAttribute $attribute, ?string $methodName = null): BelongsTo
     {
         /** @var \StevenFox\Eloquaint\Attributes\BelongsTo $attribute */
 
-        // If no relation is provided, we will guess the relation from the related class.
+        // If no relation is provided, use the method name (like Laravel does)
+        // This mimics Laravel's behavior when belongsTo() is called without a relation parameter
         if (($relation = $attribute->relation) === null) {
-            $relation = Str::camel(class_basename($attribute->getRelated()));
+            $relation = $methodName ?? Str::camel(class_basename($attribute->getRelated()));
         }
 
         return $this->belongsTo(
@@ -291,20 +296,18 @@ trait HasAttributeRelations
      * Resolve a BelongsToMany relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return BelongsToMany<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveBelongsToMany(RelationshipAttribute $attribute): BelongsToMany
+    protected function resolveBelongsToMany(RelationshipAttribute $attribute, ?string $methodName = null): BelongsToMany
     {
         /** @var \StevenFox\Eloquaint\Attributes\BelongsToMany $attribute */
 
-        // If no relation is provided, we will guess the relation from the related class.
+        // If no relation is provided, use the method name (like Laravel does)
+        // This mimics Laravel's behavior when belongsToMany() is called without a relation parameter
         if (($relation = $attribute->relation) === null) {
-            $relation = Str::camel(Str::plural(class_basename($attribute->getRelated())));
+            $relation = $methodName ?? Str::camel(Str::plural(class_basename($attribute->getRelated())));
         }
-
-        // It is also possible to get this value by inspecting a debug_backtrace,
-        // searching for the call to __call or __get,
-        // and pulling the first argument (like 'posts' or 'tags').
 
         return $this->belongsToMany(
             $attribute->getRelated(),
@@ -321,9 +324,10 @@ trait HasAttributeRelations
      * Resolve a HasManyThrough relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return HasManyThrough<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveHasManyThrough(RelationshipAttribute $attribute): HasManyThrough
+    protected function resolveHasManyThrough(RelationshipAttribute $attribute, ?string $methodName = null): HasManyThrough
     {
         /** @var \StevenFox\Eloquaint\Attributes\HasManyThrough $attribute */
         return $this->hasManyThrough(
@@ -340,9 +344,10 @@ trait HasAttributeRelations
      * Resolve a HasOneThrough relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return HasOneThrough<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveHasOneThrough(RelationshipAttribute $attribute): HasOneThrough
+    protected function resolveHasOneThrough(RelationshipAttribute $attribute, ?string $methodName = null): HasOneThrough
     {
         /** @var \StevenFox\Eloquaint\Attributes\HasOneThrough $attribute */
         return $this->hasOneThrough(
@@ -359,9 +364,10 @@ trait HasAttributeRelations
      * Resolve a MorphMany relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return MorphMany<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveMorphMany(RelationshipAttribute $attribute): MorphMany
+    protected function resolveMorphMany(RelationshipAttribute $attribute, ?string $methodName = null): MorphMany
     {
         /** @var \StevenFox\Eloquaint\Attributes\MorphMany $attribute */
         return $this->morphMany(
@@ -377,9 +383,10 @@ trait HasAttributeRelations
      * Resolve a MorphOne relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return MorphOne<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveMorphOne(RelationshipAttribute $attribute): MorphOne
+    protected function resolveMorphOne(RelationshipAttribute $attribute, ?string $methodName = null): MorphOne
     {
         /** @var \StevenFox\Eloquaint\Attributes\MorphOne $attribute */
         return $this->morphOne(
@@ -395,18 +402,19 @@ trait HasAttributeRelations
      * Resolve a MorphTo relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return MorphTo<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveMorphTo(RelationshipAttribute $attribute): MorphTo
+    protected function resolveMorphTo(RelationshipAttribute $attribute, ?string $methodName = null): MorphTo
     {
         /** @var \StevenFox\Eloquaint\Attributes\MorphTo $attribute */
 
-        // if (($name = $attribute->name) === null) {
-        //     $name = Str::camel(class_basename($this));
-        // }
+        // If no name is provided, use the method name (like Laravel does)
+        // This mimics Laravel's behavior when morphTo() is called without parameters
+        $name = $attribute->name ?? $methodName;
 
         return $this->morphTo(
-            $attribute->name,
+            $name,
             $attribute->type,
             $attribute->id,
             $attribute->ownerKey
@@ -417,11 +425,17 @@ trait HasAttributeRelations
      * Resolve a MorphToMany relationship.
      *
      * @param  RelationshipAttribute  $attribute  The relationship attribute
+     * @param  string|null  $methodName  The method name that triggered this resolution
      * @return MorphToMany<\Illuminate\Database\Eloquent\Model, $this>
      */
-    protected function resolveMorphToMany(RelationshipAttribute $attribute): MorphToMany
+    protected function resolveMorphToMany(RelationshipAttribute $attribute, ?string $methodName = null): MorphToMany
     {
         /** @var \StevenFox\Eloquaint\Attributes\MorphToMany $attribute */
+
+        // If no relation is provided, use the method name (like Laravel does)
+        // This mimics Laravel's behavior when morphToMany() is called without a relation parameter
+        $relation = $attribute->relation ?? $methodName;
+
         return $this->morphToMany(
             $attribute->getRelated(),
             $attribute->name,
@@ -430,7 +444,7 @@ trait HasAttributeRelations
             $attribute->relatedPivotKey,
             $attribute->parentKey,
             $attribute->relatedKey,
-            $attribute->relation,
+            $relation,
             $attribute->inverse
         );
     }

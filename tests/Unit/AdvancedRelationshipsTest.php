@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use StevenFox\Eloquaint\Exceptions\InvalidRelationshipAttributeException;
+use StevenFox\Eloquaint\Tests\Models\Comment;
 use StevenFox\Eloquaint\Tests\Models\Country;
 use StevenFox\Eloquaint\Tests\Models\Image;
 use StevenFox\Eloquaint\Tests\Models\Post;
@@ -117,6 +118,38 @@ it('throws exception for unsupported relationship type', function () {
 
     expect(fn() => $model->testUnsupportedRelation())
         ->toThrow(InvalidRelationshipAttributeException::class, 'Unsupported relationship type: unsupportedType');
+});
+
+it('can resolve MorphTo relationships without name parameter using method name fallback', function () {
+    $comment = new Comment;
+
+    $morphableRelation = $comment->morphableWithoutName();
+    expect($morphableRelation)->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphTo::class);
+
+    // When no name is specified, Laravel uses the method name (morphableWithoutName -> morphable_without_name)
+    expect($morphableRelation->getMorphType())->toBe('morphable_without_name_type');
+    expect($morphableRelation->getForeignKeyName())->toBe('morphable_without_name_id');
+});
+
+it('can resolve BelongsTo relationships without relation parameter using method name fallback', function () {
+    $comment = new Comment;
+
+    $authorRelation = $comment->authorWithoutRelation();
+    expect($authorRelation)->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\BelongsTo::class);
+
+    // When no relation is specified, Laravel uses the method name (authorWithoutRelation)
+    expect($authorRelation->getRelationName())->toBe('authorWithoutRelation');
+    expect($authorRelation->getForeignKeyName())->toBe('author_without_relation_id');
+});
+
+it('can resolve MorphToMany relationships without relation parameter using method name fallback', function () {
+    $user = new User;
+
+    $labelsRelation = $user->labelsWithoutRelation();
+    expect($labelsRelation)->toBeInstanceOf(\Illuminate\Database\Eloquent\Relations\MorphToMany::class);
+
+    // When no relation is specified, Laravel uses the method name (labelsWithoutRelation)
+    expect($labelsRelation->getRelationName())->toBe('labelsWithoutRelation');
 });
 
 it('applies where constraints to relationships', function () {

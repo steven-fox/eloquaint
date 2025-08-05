@@ -19,6 +19,7 @@ use StevenFox\Eloquaint\Traits\HasAttributeRelations;
 #[MorphMany(Image::class, name: 'imageable')]
 #[MorphOne(Video::class, name: 'videoable')]
 #[MorphToMany(Tag::class, name: 'taggable')]
+#[MorphToMany(Tag::class, name: 'taggable', relationName: 'labelsWithoutRelation')]
 #[MorphMany(Image::class, name: 'imageable', relationName: 'customImages', where: ['active' => true])]
 final class User extends Model
 {

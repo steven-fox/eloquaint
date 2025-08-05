@@ -60,6 +60,10 @@ beforeEach(function () {
         $table->id();
         $table->text('content');
         $table->unsignedBigInteger('post_id');
+        $table->unsignedBigInteger('user_id')->nullable();
+        $table->unsignedBigInteger('author_without_relation_id')->nullable();
+        $table->morphs('commentable');
+        $table->morphs('morphable');
         $table->timestamps();
     });
 

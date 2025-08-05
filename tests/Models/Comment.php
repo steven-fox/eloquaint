@@ -6,6 +6,7 @@ namespace StevenFox\Eloquaint\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use StevenFox\Eloquaint\Attributes\BelongsTo;
+use StevenFox\Eloquaint\Attributes\MorphTo;
 use StevenFox\Eloquaint\Traits\HasAttributeRelations;
 
 /**
@@ -19,6 +20,9 @@ use StevenFox\Eloquaint\Traits\HasAttributeRelations;
  * @property-read Post $post
  */
 #[BelongsTo(Post::class)]
+#[BelongsTo(User::class, name: 'authorWithoutRelation')]
+#[MorphTo(name: 'commentable')]
+#[MorphTo(relationName: 'morphableWithoutName')]
 final class Comment extends Model
 {
     use HasAttributeRelations;
@@ -31,6 +35,12 @@ final class Comment extends Model
     protected $fillable = [
         'post_id',
         'content',
+        'user_id',
+        'author_without_relation_id',
+        'commentable_type',
+        'commentable_id',
+        'morphable_type',
+        'morphable_id',
     ];
 
     /**
