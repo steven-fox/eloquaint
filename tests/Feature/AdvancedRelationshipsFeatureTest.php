@@ -7,7 +7,6 @@ use StevenFox\Eloquaint\Tests\Models\Country;
 use StevenFox\Eloquaint\Tests\Models\Image;
 use StevenFox\Eloquaint\Tests\Models\Post;
 use StevenFox\Eloquaint\Tests\Models\Profile;
-use StevenFox\Eloquaint\Tests\Models\PropertyAttributeModel;
 use StevenFox\Eloquaint\Tests\Models\Tag;
 use StevenFox\Eloquaint\Tests\Models\User;
 use StevenFox\Eloquaint\Tests\Models\Video;
@@ -95,8 +94,6 @@ beforeEach(function () {
         $table->timestamps();
     });
 
-
-
     Schema::create('taggables', function ($table) {
         $table->id();
         $table->morphs('taggable');
@@ -177,8 +174,6 @@ it('can create and use MorphToMany relationships defined with attributes', funct
     expect($tags)->toHaveCount(2);
     expect($tags->pluck('name')->toArray())->toContain('PHP', 'Laravel');
 });
-
-
 
 it('applies where constraints to morphMany relationships', function () {
     $country = Country::create(['name' => 'USA', 'code' => 'US']);

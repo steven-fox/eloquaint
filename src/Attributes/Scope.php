@@ -61,8 +61,6 @@ final readonly class Scope
 
     /**
      * Get the column name for where clauses.
-     *
-     * @return string
      */
     public function getColumn(): string
     {
@@ -71,8 +69,6 @@ final readonly class Scope
 
     /**
      * Get the operator for where clauses.
-     *
-     * @return string
      */
     public function getOperator(): string
     {
@@ -87,8 +83,6 @@ final readonly class Scope
 
     /**
      * Get the value for where clauses.
-     *
-     * @return mixed
      */
     public function getValue(): mixed
     {

@@ -40,8 +40,6 @@ it('can call simple scopes with operators', function () {
     expect($query->toSql())->toContain('where "views" > ?');
 });
 
-
-
 it('can chain attribute scopes with regular query methods', function () {
     $query = PostWithScopes::published()->where('title', 'like', '%test%');
 

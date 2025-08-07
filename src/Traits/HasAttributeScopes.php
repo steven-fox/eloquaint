@@ -119,7 +119,6 @@ trait HasAttributeScopes
      * Check if a method name corresponds to an attribute scope.
      *
      * @param  string  $method  The method name
-     * @return bool
      */
     public function isAttributeScope(string $method): bool
     {
@@ -130,11 +129,11 @@ trait HasAttributeScopes
      * Check if a method name corresponds to an attribute scope (static version).
      *
      * @param  string  $method  The method name
-     * @return bool
      */
     public static function isStaticAttributeScope(string $method): bool
     {
         $instance = new static;
+
         return $instance->getAttributeScope($method) !== null;
     }
 }

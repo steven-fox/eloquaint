@@ -8,7 +8,6 @@ use StevenFox\Eloquaint\Tests\Models\Country;
 use StevenFox\Eloquaint\Tests\Models\Image;
 use StevenFox\Eloquaint\Tests\Models\Post;
 use StevenFox\Eloquaint\Tests\Models\Profile;
-use StevenFox\Eloquaint\Tests\Models\PropertyAttributeModel;
 use StevenFox\Eloquaint\Tests\Models\Tag;
 use StevenFox\Eloquaint\Tests\Models\User;
 use StevenFox\Eloquaint\Tests\Models\Video;
@@ -84,26 +83,41 @@ it('can resolve custom named MorphMany relationships with constraints', function
     expect($customImagesRelation->getRelated())->toBeInstanceOf(Image::class);
 });
 
-
-
 it('throws exception for unsupported relationship type', function () {
-    $model = new class extends \Illuminate\Database\Eloquent\Model {
+    $model = new class extends \Illuminate\Database\Eloquent\Model
+    {
         use \StevenFox\Eloquaint\Traits\HasAttributeRelations;
 
         public function testUnsupportedRelation()
         {
-            $attribute = new class implements \StevenFox\Eloquaint\Attributes\Contracts\RelationshipAttribute {
-                public function getRelated(): string { return 'TestModel'; }
-                public function getName(): ?string { return null; }
-                public function getWhereConstraints(): array { return []; }
-                public function getRelationshipType(): string { return 'unsupportedType'; }
+            $attribute = new class implements \StevenFox\Eloquaint\Attributes\Contracts\RelationshipAttribute
+            {
+                public function getRelated(): string
+                {
+                    return 'TestModel';
+                }
+
+                public function getName(): ?string
+                {
+                    return null;
+                }
+
+                public function getWhereConstraints(): array
+                {
+                    return [];
+                }
+
+                public function getRelationshipType(): string
+                {
+                    return 'unsupportedType';
+                }
             };
 
             return $this->resolveAttributeRelation($attribute);
         }
     };
 
-    expect(fn() => $model->testUnsupportedRelation())
+    expect(fn () => $model->testUnsupportedRelation())
         ->toThrow(InvalidRelationshipAttributeException::class, 'Unsupported relationship type: unsupportedType');
 });
 
@@ -150,7 +164,7 @@ it('applies where constraints to relationships', function () {
     $wheres = $query->getQuery()->wheres;
 
     // Find the where clause for 'active' column
-    $activeWhere = collect($wheres)->first(fn($where) => isset($where['column']) && $where['column'] === 'active');
+    $activeWhere = collect($wheres)->first(fn ($where) => isset($where['column']) && $where['column'] === 'active');
 
     expect($activeWhere)->not->toBeNull();
     expect($activeWhere['value'])->toBe(true);
