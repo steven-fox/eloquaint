@@ -54,7 +54,7 @@ class Profile extends Model
  * Post model with author, comments, tags, and images.
  */
 #[BelongsTo(User::class, name: 'author')]
-#[HasMany(Comment::class)]
+#[MorphMany(Comment::class, 'commentable')]
 #[BelongsToMany(Tag::class)]
 #[MorphMany(Image::class, name: 'imageable')]
 class Post extends Model
